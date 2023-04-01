@@ -15,9 +15,13 @@ def main():
     spark.sql("set spark.sql.legacy.timeParserPolicy=LEGACY")
 
     events = spark.read.parquet(base_input_path)
+    
+    event_time = events \
+            .select('event_id','event_type', 'event_timestamp', 'page_url_path' , 'user_custom_id')
 
     window = Window.partitionBy('user_custom_id').orderBy(F.col('user_custom_id'))
 
+    
     mart = events \
                 .withColumn("page_2", F.lead('page_url_path', offset= 1).over(window))\
                 .withColumn("page_3", F.lead('page_url_path', offset= 2).over(window))\
